@@ -72,8 +72,6 @@ class OutLabels {
     for (let i = 0; i < meta.data.length; ++i) {
       var element = meta.data[i];
       var view = element._view;
-      var value = dataset.data[i];
-      var label = this.chart.config.data.labels[i];
 
       const a = (view.endAngle - view.startAngle) / 2;
       const segmentAngle = view.startAngle + a;
@@ -82,8 +80,6 @@ class OutLabels {
 
       const labelPoint = {
         ...p,
-        label,
-        value,
         segmentAngle,
         index,
       };
@@ -104,10 +100,11 @@ class OutLabels {
 
       // If it has collisions
       if (item && item.length > 1) {
-        second.push(item[item.length - 1]);
+        second.push(item[0]);
 
         // Place each colision somewhere else
-        for (let j = item.length - 2; j >= 0; --j) {
+        // for (let j = item.length - 2; j >= 0; --j) {
+        for (let j = 1; j < item.length; ++j) {
           const labelPoint = item[j];
 
           let p = this.closest(this.points, labelPoint.segmentAngle);
@@ -129,6 +126,11 @@ class OutLabels {
       } else {
         second.push(item[0]);
       }
+    }
+
+    for (let i = 0; i < second.length; ++i) {
+      second[i].label = this.chart.config.data.labels[i];
+      second[i].value = dataset.data[i];
     }
 
     console.log(second);
@@ -267,7 +269,9 @@ class OutLabels {
   }
 
   closest(arr, goal) {
-    return arr.reduce((prev, curr) => {
+    const filtered = arr.filter(n => !n.taken);
+
+    return filtered.reduce((prev, curr) => {
       return Math.abs(curr.angle - goal) < Math.abs(prev.angle - goal) ? curr : prev;
     });
   }
@@ -313,6 +317,7 @@ var config = {
     datasets: [
       {
         data: [85, 10, 2, 2],
+        // data: [2, 2, 10, 85],
         backgroundColor: [
           window.chartColors.red,
           window.chartColors.yellow,
