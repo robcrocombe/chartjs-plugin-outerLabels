@@ -61,7 +61,7 @@ class OutLabels {
   newPoints(view) {
     const startY = view.y - view.outerRadius;
     const endY = view.y + view.outerRadius;
-    let n = startY;
+    let n = startY + 1;
 
     const right = [];
     const left = [];
@@ -108,16 +108,30 @@ class OutLabels {
         }
       }
 
-      n += this.fontSize;
+      n += this.fontSize + 2;
       line.p1.y = n;
       line.p2.y = n;
     }
 
     const newp = [...left, ...right];
 
-    newp.splice(0, 1);
+    // newp.splice(0, 1);
 
     // newp.sort((a, b) => a.angle - b.angle);
+
+    // Add final point
+    // const point = this.intersectCircleLine(circle, {
+    //   p1: { x: 0, y: endY},
+    //   p2: { x: 999, y: endY},
+    // })[0];
+    // let angle = this.getAngle(view, point);
+
+    // newp.push({
+    //   x: point.x,
+    //   y: point.y,
+    //   angle,
+    //   degrees: Math.degrees(angle),
+    // });
 
     this.points = newp;
   }
@@ -286,9 +300,12 @@ class OutLabels {
       }
     }
 
+
+    // Add labels
+    second.sort((a, b) => a.angle - b.angle);
     for (let i = 0; i < second.length; ++i) {
-      second[i].label = this.chart.config.data.labels[second.length - i - 1];
-      second[i].value = dataset.data[second.length - i - 1];
+      second[i].label = this.chart.config.data.labels[i];
+      second[i].value = dataset.data[i];
     }
 
     console.log(second);
@@ -320,7 +337,7 @@ class OutLabels {
     ctx.save();
     ctx.fillStyle = '#000000';
     for (let i = 0; i < this.points.length; ++i) {
-      // ctx.fillRect(this.points[i].x - 1, this.points[i].y - 1, 2, 2);
+      ctx.fillRect(this.points[i].x - 1, this.points[i].y - 1, 2, 2);
       // ctx.fillText(Math.round(this.points[i].degrees), this.points[i].x - 1, this.points[i].y - 1);
     }
 
@@ -461,7 +478,7 @@ window.chartColors = {
   red: 'rgb(255, 99, 132)',
   orange: 'rgb(255, 159, 64)',
   yellow: 'rgb(255, 205, 86)',
-  green: 'rgb(75, 192, 192)',
+  green: 'rgb(101, 186, 105)',
   blue: 'rgb(54, 162, 235)',
   purple: 'rgb(153, 102, 255)',
   grey: 'rgb(201, 203, 207)',
@@ -487,7 +504,7 @@ var config = {
     datasets: [
       {
         data: [85, 10, 2, 2],
-        // data: [2, 2, 10, 85],
+        // data: [85, 2, 2, 85],
         backgroundColor: [
           window.chartColors.red,
           window.chartColors.yellow,
