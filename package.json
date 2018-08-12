@@ -1,0 +1,25 @@
+{
+  "name": "chartjs-outside-labels",
+  "version": "1.0.0",
+  "description": "Chart.js outside labels",
+  "main": "index.js",
+  "scripts": {
+    "start": "parcel index.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Rob Crocombe",
+  "license": "ISC",
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "parser": "babel"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "parcel-bundler": "1.9.7"
+  },
+  "dependencies": {
+    "chart.js": "^2.7.2"
+  }
+}
