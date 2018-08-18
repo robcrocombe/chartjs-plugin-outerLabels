@@ -59,8 +59,8 @@ class OutLabels {
   }
 
   newPoints(view) {
-    const startY = view.y - view.outerRadius;
-    const endY = view.y + view.outerRadius;
+    const startY = view.y - (view.outerRadius + this.offset);
+    const endY = view.y + (view.outerRadius + this.offset);
     let n = startY + 1;
 
     const right = [];
@@ -71,7 +71,7 @@ class OutLabels {
       p2: { x: 999, y: n },
     };
     const circle = {
-      radius: view.outerRadius,
+      radius: view.outerRadius + this.offset,
       center: { x: view.x, y: view.y },
     };
 
@@ -112,6 +112,9 @@ class OutLabels {
       line.p1.y = n;
       line.p2.y = n;
     }
+
+    left[(left.length - 1) / 2].middle = true;
+    right[(right.length - 1) / 2].middle = true;
 
     const newp = [...left, ...right];
 
@@ -294,9 +297,9 @@ class OutLabels {
     }
 
     ctx.save();
-    ctx.fillStyle = '#000000';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.09)';
     for (let i = 0; i < this.points.length; ++i) {
-      ctx.fillRect(this.points[i].x - 1, this.points[i].y - 1, 2, 2);
+      // ctx.fillRect(this.points[i].x - 1, this.points[i].y - 1, 2, 2);
       // ctx.fillText(Math.round(this.points[i].degrees), this.points[i].x - 1, this.points[i].y - 1);
     }
 
@@ -309,7 +312,10 @@ class OutLabels {
     ctx.font = Chart.helpers.fontString(this.fontSize, this.fontBoldStyle, this.fontFamily);
     const valueWidth = ctx.measureText(value + ' ').width;
 
-    if (point.y < view.y) {
+    if (point.middle) {
+      ctx.textBaseline = 'middle';
+    }
+    else if (point.y < view.y) {
       ctx.textBaseline = 'alphabetic';
     } else {
       ctx.textBaseline = 'hanging';
@@ -328,86 +334,6 @@ class OutLabels {
     ctx.fillText(value, valueX, point.y);
 
     // Action
-    ctx.font = Chart.helpers.fontString(this.fontSize, this.fontNormalStyle, this.fontFamily);
-    ctx.fillText(label, labelX, point.y);
-
-    ctx.restore();
-  }
-
-  draw(dataset, meta, i) {
-    var ctx = this.ctx;
-    var element = meta.data[i];
-    var view = element._view;
-    var value = dataset.data[i];
-    var label = this.chart.config.data.labels[i];
-    var text = `${value} ${label}`;
-
-    if (view.circumference === 0 && !this.showZero) {
-      return;
-    }
-    // console.log(text, view);
-
-    ctx.save();
-    ctx.fillStyle = '#FF0000';
-    // ctx.font = `${this.fontSize}px Verdana`;
-    // ctx.fillRect(view.x - 1, view.y - 1, 2, 2);
-    for (let i = 0; i < this.points.length; ++i) {
-      // if (this.points[i].x < view.x) {
-      //   ctx.textAlign = 'right';
-      // } else {
-      //   ctx.textAlign = 'left';
-      // }
-      // if (this.points[i].y < view.y) {
-      //   ctx.textBaseline = 'alphabetic';
-      // } else {
-      //   ctx.textBaseline = 'hanging';
-      // }
-
-      ctx.fillRect(this.points[i].x - 1, this.points[i].y - 1, 2, 2);
-      // ctx.fillText('Hello there', this.points[i].x, this.points[i].y);
-    }
-    const a = (view.endAngle - view.startAngle) / 2;
-    // console.log(view.endAngle - view.startAngle);
-    const point = this.closest(this.points, view.startAngle + a);
-
-    // while (this.taken[p] && p < this.angles.length - 1) {
-    //   p++;
-    // }
-
-    // this.angles.splice(p, 1);
-
-    // ctx.fillRect(this.points[p].x - 1, this.points[p].y - 1, 2, 2);
-    // ctx.fillText(text, this.points[p].x, this.points[p].y);
-
-    ctx.font = Chart.helpers.fontString(this.fontSize, this.fontNormalStyle, this.fontFamily);
-    const labelWidth = ctx.measureText(' ' + label).width;
-    const startX = point.x;
-    let valueX, labelX;
-
-    ctx.fillStyle = '#565d64';
-    ctx.font = Chart.helpers.fontString(this.fontSize, this.fontBoldStyle, this.fontFamily);
-    const valueWidth = ctx.measureText(value + ' ').width;
-
-    if (point.y < view.y) {
-      ctx.textBaseline = 'alphabetic';
-    } else {
-      ctx.textBaseline = 'hanging';
-    }
-    if (point.x < view.x) {
-      ctx.textAlign = 'right';
-      valueX = startX - labelWidth;
-      labelX = startX;
-    } else {
-      ctx.textAlign = 'left';
-      valueX = startX;
-      labelX = startX + valueWidth;
-    }
-
-    // Score
-    ctx.fillText(value, valueX, point.y);
-
-    // Action
-    // const scoreWidth = ctx.measureText(value + ' ').width;
     ctx.font = Chart.helpers.fontString(this.fontSize, this.fontNormalStyle, this.fontFamily);
     ctx.fillText(label, labelX, point.y);
 
@@ -464,7 +390,7 @@ var config = {
     datasets: [
       {
         data: [85, 2, 8, 20],
-        // data: [20, 2, 2, 85],
+        // data: [2, 2, 2, 85],
         backgroundColor: [
           window.chartColors.red,
           window.chartColors.yellow,
