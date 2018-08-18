@@ -6,14 +6,6 @@ if (module.hot) {
   });
 }
 
-Math.radians = function(degrees) {
-  return degrees * Math.PI / 180;
-};
-
-Math.degrees = function(radians) {
-  return radians * 180 / Math.PI;
-};
-
 class OutLabels {
   init(chartInstance) {
     this.chart = chartInstance;
@@ -24,20 +16,38 @@ class OutLabels {
     this.fontFamily = '-apple-system, BlinkMacSystemFont, sans-serif';
     this.fontNormalStyle = 400;
     this.fontBoldStyle = 500;
+    this.anchorPointResolution = 48;
   }
 
   drawDataset(dataset) {
-    var meta = dataset._meta[Object.keys(dataset._meta)[0]];
+    const meta = dataset._meta[Object.keys(dataset._meta)[0]];
 
     const element = meta.data[0];
     const view = element._view;
-    const count = 48;
     this.points = [];
 
     this.generatePoints(view);
 
+    if (!this.points.length) {
+      if (this.debug) {
+        console.error('Unable to generate label anchor points.');
+      }
+      return;
+    }
+
+    if (this.points.length < this.chart.config.data.labels) {
+      if (this.debug) {
+        console.error('Too many labels to fit into the available anchor points.');
+      }
+      return;
+    }
+
     const labels = this.resolve(dataset, meta);
 
+    this.drawLabels(meta, labels);
+  }
+
+  drawLabels(meta, labels) {
     for (let i = 0; i < labels.length; ++i) {
       this.draw(meta, labels[i], i);
     }
@@ -80,7 +90,6 @@ class OutLabels {
           x: point.x,
           y: point.y,
           angle,
-          degrees: Math.degrees(angle),
         };
 
         if (i % 2 === 0) {
@@ -96,16 +105,23 @@ class OutLabels {
     }
 
     // Flag that the middle points can be vertically centred
-    left[(left.length - 1) / 2].middle = true;
-    right[(right.length - 1) / 2].middle = true;
+    const leftMiddleIndex = (left.length - 1) / 2;
+    const rightMiddleIndex = (right.length - 1) / 2;
+    if (left[leftMiddleIndex]) {
+      left[leftMiddleIndex].middle = true;
+    }
+    if (right[rightMiddleIndex]) {
+      right[rightMiddleIndex].middle = true;
+    }
 
     const newp = [...left, ...right];
 
     this.points = newp;
   }
 
+  // Source: https://stackoverflow.com/a/37225895
   intersectCircleLine(circle, line) {
-    var a, b, c, d, u1, u2, ret, retP1, retP2, v1, v2;
+    let a, b, c, d, u1, u2, ret, retP1, retP2, v1, v2;
     v1 = {};
     v2 = {};
     v1.x = line.p2.x - line.p1.x;
@@ -144,8 +160,8 @@ class OutLabels {
     const labels = [];
 
     for (let i = 0; i < meta.data.length; ++i) {
-      var element = meta.data[i];
-      var view = element._view;
+      const element = meta.data[i];
+      const view = element._view;
 
       const a = (view.endAngle - view.startAngle) / 2;
       const segmentAngle = view.startAngle + a;
@@ -177,19 +193,19 @@ class OutLabels {
   getAngle(origin, point) {
     let a = Math.atan2(point.y - origin.y, point.x - origin.x);
 
-    if (a < Math.radians(-90)) {
-      a += Math.radians(360);
+    if (a < this.radians(-90)) {
+      a += this.radians(360);
     }
 
     return a;
   }
 
   draw(meta, point, i) {
-    var ctx = this.ctx;
-    var element = meta.data[i];
-    var view = element._view;
-    var value = point.value;
-    var label = point.label;
+    const ctx = this.ctx;
+    const element = meta.data[i];
+    const view = element._view;
+    const value = point.value;
+    const label = point.label;
 
     if (view.circumference === 0 && !this.showZero) {
       return;
@@ -237,6 +253,14 @@ class OutLabels {
     return filtered.reduce((prev, curr) => {
       return Math.abs(curr.angle - goal) < Math.abs(prev.angle - goal) ? curr : prev;
     });
+  }
+
+  radians(degrees) {
+    return degrees * Math.PI / 180;
+  }
+
+  degrees(radians) {
+    return radians * 180 / Math.PI;
   }
 }
 
