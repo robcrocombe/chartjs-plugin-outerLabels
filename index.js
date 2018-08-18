@@ -10,20 +10,27 @@ class OutLabels {
   init(chartInstance) {
     this.chart = chartInstance;
     this.ctx = chartInstance.chart.ctx;
-    this.offset = 3;
-    this.fontSize = 14;
-    this.padding = 2;
-    this.fontFamily = '-apple-system, BlinkMacSystemFont, sans-serif';
-    this.fontNormalStyle = 400;
-    this.fontBoldStyle = 500;
-    this.anchorPointResolution = 48;
   }
 
-  drawDataset(dataset) {
-    const meta = dataset._meta[Object.keys(dataset._meta)[0]];
+  configure(override) {
+    this.config = {
+      offset: 3,
+      padding: 2,
+      color: '#565d64',
+      fontSize: Chart.defaults.global.defaultFontSize,
+      fontFamily: Chart.defaults.global.defaultFontFamily,
+      fontNormalStyle: 400,
+      fontBoldStyle: 600,
+      formatter: n => `${n.value} ${n.label}`,
+      ...override,
+    };
+  }
 
+  resolveDataset(dataset) {
+    const meta = dataset._meta[Object.keys(dataset._meta)[0]];
     const element = meta.data[0];
     const view = element._view;
+    this.meta = meta;
     this.points = [];
 
     this.generatePoints(view);
@@ -42,29 +49,12 @@ class OutLabels {
       return;
     }
 
-    const labels = this.resolve(dataset, meta);
-
-    this.drawLabels(meta, labels);
-  }
-
-  drawLabels(meta, labels) {
-    for (let i = 0; i < labels.length; ++i) {
-      this.draw(meta, labels[i], i);
-    }
-
-    if (this.debug) {
-      this.ctx.save();
-      this.ctx.fillStyle = '#ff0000';
-      for (let i = 0; i < this.points.length; ++i) {
-        this.ctx.fillRect(this.points[i].x - 1, this.points[i].y - 1, 2, 2);
-      }
-      this.ctx.restore();
-    }
+    this.model = this.resolve(dataset, meta);
   }
 
   generatePoints(view) {
-    const startY = view.y - (view.outerRadius + this.offset);
-    const endY = view.y + (view.outerRadius + this.offset);
+    const startY = view.y - (view.outerRadius + this.config.offset);
+    const endY = view.y + (view.outerRadius + this.config.offset);
     let n = startY + 1;
 
     const right = [];
@@ -75,7 +65,7 @@ class OutLabels {
       p2: { x: 999, y: n },
     };
     const circle = {
-      radius: view.outerRadius + this.offset,
+      radius: view.outerRadius + this.config.offset,
       center: { x: view.x, y: view.y },
     };
 
@@ -84,7 +74,7 @@ class OutLabels {
 
       for (let i = 0; i < intersection.length; ++i) {
         const point = intersection[i];
-        let angle = this.getAngle(view, point);
+        const angle = this.getAngle(view, point);
 
         const data = {
           x: point.x,
@@ -99,7 +89,7 @@ class OutLabels {
         }
       }
 
-      n += this.fontSize + this.padding;
+      n += this.config.fontSize + this.config.padding;
       line.p1.y = n;
       line.p2.y = n;
     }
@@ -114,9 +104,7 @@ class OutLabels {
       right[rightMiddleIndex].middle = true;
     }
 
-    const newp = [...left, ...right];
-
-    this.points = newp;
+    this.points = [...left, ...right];
   }
 
   // Source: https://stackoverflow.com/a/37225895
@@ -166,7 +154,7 @@ class OutLabels {
       const a = (view.endAngle - view.startAngle) / 2;
       const segmentAngle = view.startAngle + a;
 
-      let p = this.closest(this.points, segmentAngle);
+      const p = this.closest(this.points, segmentAngle);
       const index = this.points.indexOf(p);
 
       const labelPoint = {
@@ -183,8 +171,10 @@ class OutLabels {
     // Add labels
     labels.sort((a, b) => a.angle - b.angle);
     for (let i = 0; i < labels.length; ++i) {
-      labels[i].label = this.chart.config.data.labels[i];
-      labels[i].value = dataset.data[i];
+      labels[i].label = this.config.formatter({
+        label: this.chart.config.data.labels[i],
+        value: dataset.data[i],
+      });
     }
 
     return labels;
@@ -200,24 +190,47 @@ class OutLabels {
     return a;
   }
 
-  draw(meta, point, i) {
-    const ctx = this.ctx;
-    const element = meta.data[i];
-    const view = element._view;
-    const value = point.value;
-    const label = point.label;
+  drawLabels() {
+    for (let i = 0; i < this.model.length; ++i) {
+      this.draw(this.meta.data[i], this.model[i]);
+    }
 
-    if (view.circumference === 0 && !this.showZero) {
+    if (this.debug) {
+      this.ctx.save();
+      this.ctx.fillStyle = '#ff0000';
+      for (let i = 0; i < this.points.length; ++i) {
+        this.ctx.fillRect(this.points[i].x - 1, this.points[i].y - 1, 2, 2);
+      }
+      this.ctx.restore();
+    }
+  }
+
+  draw(element, point) {
+    const ctx = this.ctx;
+    const view = element._view;
+    const parts = point.label.split(' ');
+    const value = parts[0];
+    const label = parts[1];
+
+    if (view.circumference === 0) {
       return;
     }
 
-    ctx.font = Chart.helpers.fontString(this.fontSize, this.fontNormalStyle, this.fontFamily);
+    ctx.font = Chart.helpers.fontString(
+      this.config.fontSize,
+      this.config.fontNormalStyle,
+      this.config.fontFamily
+    );
     const labelWidth = ctx.measureText(' ' + label).width;
     const startX = point.x;
     let valueX, labelX;
 
-    ctx.fillStyle = '#565d64';
-    ctx.font = Chart.helpers.fontString(this.fontSize, this.fontBoldStyle, this.fontFamily);
+    ctx.fillStyle = this.config.color;
+    ctx.font = Chart.helpers.fontString(
+      this.config.fontSize,
+      this.config.fontBoldStyle,
+      this.config.fontFamily
+    );
     const valueWidth = ctx.measureText(value + ' ').width;
 
     if (point.middle) {
@@ -237,11 +250,15 @@ class OutLabels {
       labelX = startX + valueWidth;
     }
 
-    // Score
+    // Value
     ctx.fillText(value, valueX, point.y);
 
-    // Action
-    ctx.font = Chart.helpers.fontString(this.fontSize, this.fontNormalStyle, this.fontFamily);
+    // Label
+    ctx.font = Chart.helpers.fontString(
+      this.config.fontSize,
+      this.config.fontNormalStyle,
+      this.config.fontFamily
+    );
     ctx.fillText(label, labelX, point.y);
 
     ctx.restore();
@@ -264,15 +281,23 @@ class OutLabels {
   }
 }
 
-var ol = new OutLabels();
+const ol = new OutLabels();
 
 Chart.pluginService.register({
-  id: 'outLabels',
-  afterDatasetsDraw: chartInstance => {
+  id: 'outerLabels',
+  beforeInit: (chartInstance, options) => {
     ol.init(chartInstance);
-    chartInstance.config.data.datasets.forEach(ol.drawDataset.bind(ol));
+    ol.configure(options);
+  },
+  afterDatasetsDraw: chartInstance => {
+    const dataset = chartInstance.config.data.datasets[0];
+    ol.resolveDataset(dataset);
+    ol.drawLabels(dataset);
   },
 });
+
+Chart.defaults.global.defaultFontFamily = '-apple-system, BlinkMacSystemFont, sans-serif';
+Chart.defaults.global.defaultFontSize = 12;
 
 window.chartColors = {
   red: 'rgb(255, 99, 132)',
@@ -284,10 +309,12 @@ window.chartColors = {
   grey: 'rgb(201, 203, 207)',
 };
 
-var config = {
+const config = {
   options: {
     plugins: {
-      outLabels: {},
+      outerLabels: {
+        fontSize: 14,
+      },
     },
     tooltips: {
       enabled: false,
@@ -320,6 +347,6 @@ var config = {
 };
 
 window.onload = function() {
-  var ctx = document.getElementById('chart-area').getContext('2d');
+  const ctx = document.getElementById('chart-area').getContext('2d');
   window.myDoughnut = new Chart(ctx, config);
 };
