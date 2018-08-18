@@ -19,8 +19,8 @@ class OutLabels {
     this.chart = chartInstance;
     this.ctx = chartInstance.chart.ctx;
     this.offset = 3;
-    this.fontSize = 12;
-    this.safeHeight = 12;
+    this.fontSize = 14;
+    // this.safeHeight = 12;
     this.fontFamily = '-apple-system, BlinkMacSystemFont, sans-serif';
     this.fontNormalStyle = 400;
     this.fontBoldStyle = 500;
@@ -235,8 +235,7 @@ class OutLabels {
   }
 
   resolve(dataset, meta) {
-    const first = {};
-    const second = [];
+    const labels = [];
 
     for (let i = 0; i < meta.data.length; ++i) {
       var element = meta.data[i];
@@ -256,60 +255,20 @@ class OutLabels {
 
       this.points[index].taken = true;
 
-      if (first[index]) {
-        first[index].push(labelPoint);
-      } else {
-        first[index] = [labelPoint];
-      }
+      labels.push(labelPoint);
     }
 
     console.log(this.points);
 
-    // For each point
-    const keys = Object.keys(first);
-    for (let i = 0; i < keys.length; ++i) {
-      const item = first[keys[i]];
-
-      // If it has collisions
-      if (item && item.length > 1) {
-        second.push(item[0]);
-
-        // Place each colision somewhere else
-        // for (let j = item.length - 2; j >= 0; --j) {
-        for (let j = 1; j < item.length; ++j) {
-          const labelPoint = item[j];
-
-          let p = this.closest(this.points, labelPoint.segmentAngle);
-
-          // if (labelPoint.label === 'Yellow' || labelPoint.label === 'Blue') {
-          //   console.log(p);
-          // }
-
-          if (p) {
-            this.points[this.points.indexOf(p)].taken = true;
-
-            second.push({
-              ...labelPoint,
-              ...p,
-              index: this.points.indexOf(p),
-            });
-          }
-        }
-      } else {
-        second.push(item[0]);
-      }
-    }
-
-
     // Add labels
-    second.sort((a, b) => a.angle - b.angle);
-    for (let i = 0; i < second.length; ++i) {
-      second[i].label = this.chart.config.data.labels[i];
-      second[i].value = dataset.data[i];
+    labels.sort((a, b) => a.angle - b.angle);
+    for (let i = 0; i < labels.length; ++i) {
+      labels[i].label = this.chart.config.data.labels[i];
+      labels[i].value = dataset.data[i];
     }
 
-    console.log(second);
-    return second;
+    console.log(labels);
+    return labels;
   }
 
   getAngle(origin, point) {
@@ -498,13 +457,14 @@ var config = {
     layout: {
       padding: 30,
     },
+    events: [],
   },
   type: 'doughnut',
   data: {
     datasets: [
       {
-        data: [85, 10, 2, 2],
-        // data: [85, 2, 2, 85],
+        data: [85, 2, 8, 20],
+        // data: [20, 2, 2, 85],
         backgroundColor: [
           window.chartColors.red,
           window.chartColors.yellow,
