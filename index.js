@@ -16,11 +16,13 @@ class OutLabels {
     this.config = {
       offset: 3,
       padding: 2,
-      color: '#565d64',
+      color: Chart.defaults.global.defaultFontColor,
       fontSize: Chart.defaults.global.defaultFontSize,
       fontFamily: Chart.defaults.global.defaultFontFamily,
       fontNormalStyle: 400,
       fontBoldStyle: 600,
+      twoLines: false,
+      debug: false,
       formatter: n => `${n.value} ${n.label}`,
       ...override,
     };
@@ -89,7 +91,11 @@ class OutLabels {
         }
       }
 
-      n += this.config.fontSize + this.config.padding;
+      if (this.config.twoLines) {
+        n += (this.config.fontSize + this.config.padding) * 2;
+      } else {
+        n += this.config.fontSize + this.config.padding;
+      }
       line.p1.y = n;
       line.p2.y = n;
     }
@@ -147,6 +153,7 @@ class OutLabels {
   resolve(dataset, meta) {
     const labels = [];
 
+    // Match each chart segment to a point
     for (let i = 0; i < meta.data.length; ++i) {
       const element = meta.data[i];
       const view = element._view;
@@ -181,21 +188,25 @@ class OutLabels {
   }
 
   getAngle(origin, point) {
-    let a = Math.atan2(point.y - origin.y, point.x - origin.x);
+    let angle = Math.atan2(point.y - origin.y, point.x - origin.x);
 
-    if (a < this.radians(-90)) {
-      a += this.radians(360);
+    if (angle < this.radians(-90)) {
+      angle += this.radians(360);
     }
 
-    return a;
+    return angle;
   }
 
   drawLabels() {
     for (let i = 0; i < this.model.length; ++i) {
-      this.draw(this.meta.data[i], this.model[i]);
+      if (this.config.twoLines) {
+        this.drawDoubleLine(this.meta.data[i], this.model[i]);
+      } else {
+        this.drawSingleLine(this.meta.data[i], this.model[i]);
+      }
     }
 
-    if (this.debug) {
+    if (this.config.debug) {
       this.ctx.save();
       this.ctx.fillStyle = '#ff0000';
       for (let i = 0; i < this.points.length; ++i) {
@@ -205,7 +216,94 @@ class OutLabels {
     }
   }
 
-  draw(element, point) {
+  drawDoubleLine(element, point) {
+    const ctx = this.ctx;
+    const view = element._view;
+    const parts = point.label.split(' ');
+    const value = parts[0];
+    const label = parts[1];
+
+    if (view.circumference === 0) {
+      return;
+    }
+
+    ctx.font = Chart.helpers.fontString(
+      this.config.fontSize,
+      this.config.fontNormalStyle,
+      this.config.fontFamily
+    );
+    const labelWidth = ctx.measureText(' ' + label).width;
+    const startX = point.x;
+    let valueX, valueY, labelX, labelY;
+
+    ctx.fillStyle = this.config.color;
+    ctx.font = Chart.helpers.fontString(
+      this.config.fontSize + 2,
+      this.config.fontBoldStyle,
+      this.config.fontFamily
+    );
+    const valueWidth = ctx.measureText(value + ' ').width;
+
+    // Calculate drawing origin
+    if (point.middle) {
+      ctx.textBaseline = 'middle';
+      valueY = point.y - this.config.fontSize / 2;
+      labelY = point.y + this.config.fontSize / 2;
+    } else if (point.y < view.y) {
+      ctx.textBaseline = 'alphabetic';
+      valueY = point.y - this.config.fontSize;
+      labelY = point.y;
+    } else {
+      ctx.textBaseline = 'hanging';
+      valueY = point.y;
+      labelY = point.y + this.config.fontSize;
+    }
+    if (point.x < view.x) {
+      ctx.textAlign = 'right';
+      valueX = startX;
+      labelX = startX;
+    } else {
+      ctx.textAlign = 'left';
+      valueX = startX;
+      labelX = startX;
+    }
+
+    // Calculate text centering offset
+    let centerOffset = (labelWidth - valueWidth) / 2;
+
+    if (centerOffset < 0) {
+      // Label is thinner than value
+      centerOffset = Math.abs(centerOffset);
+
+      if (point.x < view.x) {
+        labelX -= centerOffset;
+      } else {
+        labelX += centerOffset;
+      }
+    } else {
+      // Label is wider than value
+      if (point.x < view.x) {
+        valueX -= centerOffset;
+      } else {
+        valueX += centerOffset;
+      }
+    }
+
+    // Draw value
+    ctx.fillText(value, valueX, valueY);
+
+    // Draw label
+    ctx.font = Chart.helpers.fontString(
+      this.config.fontSize,
+      this.config.fontNormalStyle,
+      this.config.fontFamily
+    );
+    ctx.fillText(label, labelX, labelY);
+
+    ctx.restore();
+  }
+
+  drawSingleLine(element, point) {
     const ctx = this.ctx;
     const view = element._view;
     const parts = point.label.split(' ');
@@ -233,6 +331,7 @@ class OutLabels {
     );
     const valueWidth = ctx.measureText(value + ' ').width;
 
+    // Calculate drawing origin
     if (point.middle) {
       ctx.textBaseline = 'middle';
     } else if (point.y < view.y) {
@@ -250,10 +349,10 @@ class OutLabels {
       labelX = startX + valueWidth;
     }
 
-    // Value
+    // Draw value
     ctx.fillText(value, valueX, point.y);
 
-    // Label
+    // Draw label
     ctx.font = Chart.helpers.fontString(
       this.config.fontSize,
       this.config.fontNormalStyle,
@@ -281,18 +380,19 @@ class OutLabels {
   }
 }
 
-const ol = new OutLabels();
+// const ol = new OutLabels();
 
 Chart.pluginService.register({
   id: 'outerLabels',
   beforeInit: (chartInstance, options) => {
-    ol.init(chartInstance);
-    ol.configure(options);
+    chartInstance.outerLabels = new OutLabels();
+    chartInstance.outerLabels.init(chartInstance);
+    chartInstance.outerLabels.configure(options);
   },
   afterDatasetsDraw: chartInstance => {
     const dataset = chartInstance.config.data.datasets[0];
-    ol.resolveDataset(dataset);
-    ol.drawLabels(dataset);
+    chartInstance.outerLabels.resolveDataset(dataset);
+    chartInstance.outerLabels.drawLabels(dataset);
   },
 });
 
@@ -314,6 +414,7 @@ const config = {
     plugins: {
       outerLabels: {
         fontSize: 14,
+        color: '#565d64',
       },
     },
     tooltips: {
@@ -346,7 +447,22 @@ const config = {
   },
 };
 
+function newConfig(data) {
+  const c = JSON.parse(JSON.stringify(config));
+  c.data.datasets[0].data = data;
+  return c;
+}
+
 window.onload = function() {
-  const ctx = document.getElementById('chart-area').getContext('2d');
-  window.myDoughnut = new Chart(ctx, config);
+  const ctx1 = document.getElementById('chart-area1').getContext('2d');
+  new Chart(ctx1, newConfig([85, 2, 8, 20]));
+
+  const ctx2 = document.getElementById('chart-area2').getContext('2d');
+  new Chart(ctx2, newConfig([16, 2, 2, 42]));
+
+  const ctx3 = document.getElementById('chart-area3').getContext('2d');
+  new Chart(ctx3, newConfig([500, 100, 12000]));
+
+  const ctx4 = document.getElementById('chart-area4').getContext('2d');
+  new Chart(ctx4, newConfig([50, 50]));
 };
