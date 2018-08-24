@@ -1,2 +1,2 @@
-# chartjs-outside-labels
-Chart.js outside labels
+# chartjs-outer-labels
+Chart.js outer labels
