@@ -1,14 +1,14 @@
 {
-  "name": "chartjs-outside-labels",
+  "name": "chartjs-outer-labels",
   "version": "1.0.0",
-  "description": "Chart.js outside labels",
-  "main": "index.js",
+  "description": "Chart.js outerLabels plugin",
+  "main": "outerLabels.js",
   "scripts": {
-    "start": "parcel index.html",
+    "start": "parcel ./demo/demo.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Rob Crocombe",
-  "license": "ISC",
+  "author": "Rob Crocombe <me@robcrocombe.com> (http://robcrocombe.com)",
+  "license": "MIT",
   "prettier": {
     "printWidth": 100,
     "singleQuote": true,
@@ -16,10 +16,13 @@
     "parser": "babel"
   },
   "devDependencies": {
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-plugin-transform-object-rest-spread": "6.26.0",
     "parcel-bundler": "1.9.7"
   },
   "dependencies": {
-    "chart.js": "^2.7.2"
+    "chart.js": "2.7.2"
+  },
+  "peerDependencies": {
+    "chart.js": ">= 2.7.0 < 3"
   }
 }
