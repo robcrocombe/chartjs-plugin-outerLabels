@@ -1,6 +1,13 @@
 import 'chart.js';
 import './../outerLabels';
 
+// Reload page on code change
+if (module.hot) {
+  module.hot.dispose(() => {
+    window.location.reload();
+  });
+}
+
 Chart.defaults.global.defaultFontFamily = '-apple-system, BlinkMacSystemFont, sans-serif';
 Chart.defaults.global.defaultFontSize = 12;
 
@@ -52,9 +59,14 @@ const config = {
   },
 };
 
-function newConfig(data) {
+function newConfig(data, twoLines) {
   const c = JSON.parse(JSON.stringify(config));
   c.data.datasets[0].data = data;
+
+  if (twoLines) {
+    c.options.plugins.outerLabels.twoLines = true;
+  }
+
   return c;
 }
 
@@ -66,7 +78,7 @@ window.onload = function() {
   new Chart(ctx2, newConfig([16, 2, 2, 42]));
 
   const ctx3 = document.getElementById('chart-area3').getContext('2d');
-  new Chart(ctx3, newConfig([500, 100, 12000]));
+  new Chart(ctx3, newConfig([500, 100, 12000], true));
 
   const ctx4 = document.getElementById('chart-area4').getContext('2d');
   new Chart(ctx4, newConfig([50, 50]));

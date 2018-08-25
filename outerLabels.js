@@ -1,10 +1,4 @@
-import 'chart.js';
-
-if (module.hot) {
-  module.hot.dispose(() => {
-    window.location.reload();
-  });
-}
+import Chart from 'chart.js';
 
 class OutLabels {
   init(chartInstance) {
@@ -38,14 +32,14 @@ class OutLabels {
     this.generatePoints(view);
 
     if (!this.points.length) {
-      if (this.debug) {
+      if (this.config.debug) {
         console.error('Unable to generate label anchor points.');
       }
       return;
     }
 
     if (this.points.length < this.chart.config.data.labels) {
-      if (this.debug) {
+      if (this.config.debug) {
         console.error('Too many labels to fit into the available anchor points.');
       }
       return;
