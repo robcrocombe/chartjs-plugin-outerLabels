@@ -16,7 +16,7 @@ class OutLabels {
     this.config = {
       offset: 3,
       padding: 2,
-      color: Chart.defaults.global.defaultFontColor,
+      fontColor: Chart.defaults.global.defaultFontColor,
       fontSize: Chart.defaults.global.defaultFontSize,
       fontFamily: Chart.defaults.global.defaultFontFamily,
       fontNormalStyle: 400,
@@ -236,7 +236,7 @@ class OutLabels {
     const startX = point.x;
     let valueX, valueY, labelX, labelY;
 
-    ctx.fillStyle = this.config.color;
+    ctx.fillStyle = this.config.fontColor;
     ctx.font = Chart.helpers.fontString(
       this.config.fontSize + 2,
       this.config.fontBoldStyle,
@@ -323,7 +323,7 @@ class OutLabels {
     const startX = point.x;
     let valueX, labelX;
 
-    ctx.fillStyle = this.config.color;
+    ctx.fillStyle = this.config.fontColor;
     ctx.font = Chart.helpers.fontString(
       this.config.fontSize,
       this.config.fontBoldStyle,

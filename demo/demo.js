@@ -19,7 +19,7 @@ const config = {
     plugins: {
       outerLabels: {
         fontSize: 14,
-        color: '#565d64',
+        fontColor: '#565d64',
       },
     },
     tooltips: {

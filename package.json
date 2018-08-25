@@ -1,5 +1,5 @@
 {
-  "name": "chartjs-outer-labels",
+  "name": "chartjs-plugin-outerLabels",
   "version": "1.0.0",
   "description": "Chart.js outerLabels plugin",
   "main": "outerLabels.js",
