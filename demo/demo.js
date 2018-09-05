@@ -25,8 +25,11 @@ const config = {
   options: {
     plugins: {
       outerLabels: {
-        fontSize: 14,
-        fontColor: '#565d64',
+        fontNormalSize: 14,
+        fontNormalColor: '#565d64',
+        fontBoldSize: 14,
+        fontBoldColor: '#2e2e2e',
+        debug: true,
       },
     },
     tooltips: {
@@ -65,6 +68,7 @@ function newConfig(data, twoLines) {
 
   if (twoLines) {
     c.options.plugins.outerLabels.twoLines = true;
+    c.options.plugins.outerLabels.fontBoldSize = 16;
   }
 
   return c;

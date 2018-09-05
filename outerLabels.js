@@ -10,9 +10,12 @@ class OutLabels {
     this.config = {
       offset: 3,
       padding: 2,
-      fontColor: Chart.defaults.global.defaultFontColor,
-      fontSize: Chart.defaults.global.defaultFontSize,
-      fontFamily: Chart.defaults.global.defaultFontFamily,
+      fontNormalColor: Chart.defaults.global.defaultFontColor,
+      fontNormalSize: Chart.defaults.global.defaultFontSize,
+      fontNormalFamily: Chart.defaults.global.defaultFontFamily,
+      fontBoldColor: Chart.defaults.global.defaultFontColor,
+      fontBoldSize: Chart.defaults.global.defaultFontSize + 2,
+      fontBoldFamily: Chart.defaults.global.defaultFontFamily,
       fontNormalStyle: 400,
       fontBoldStyle: 600,
       twoLines: false,
@@ -86,9 +89,9 @@ class OutLabels {
       }
 
       if (this.config.twoLines) {
-        n += (this.config.fontSize + this.config.padding) * 2;
+        n += (this.config.fontNormalSize + this.config.padding) * 2;
       } else {
-        n += this.config.fontSize + this.config.padding;
+        n += this.config.fontNormalSize + this.config.padding;
       }
       line.p1.y = n;
       line.p2.y = n;
@@ -222,35 +225,35 @@ class OutLabels {
     }
 
     ctx.font = Chart.helpers.fontString(
-      this.config.fontSize,
+      this.config.fontNormalSize,
       this.config.fontNormalStyle,
-      this.config.fontFamily
+      this.config.fontNormalFamily
     );
     const labelWidth = ctx.measureText(' ' + label).width;
     const startX = point.x;
     let valueX, valueY, labelX, labelY;
 
-    ctx.fillStyle = this.config.fontColor;
+    ctx.fillStyle = this.config.fontBoldColor;
     ctx.font = Chart.helpers.fontString(
-      this.config.fontSize + 2,
+      this.config.fontBoldSize,
       this.config.fontBoldStyle,
-      this.config.fontFamily
+      this.config.fontBoldFamily
     );
     const valueWidth = ctx.measureText(value + ' ').width;
 
     // Calculate drawing origin
     if (point.middle) {
       ctx.textBaseline = 'middle';
-      valueY = point.y - this.config.fontSize / 2;
-      labelY = point.y + this.config.fontSize / 2;
+      valueY = point.y - this.config.fontNormalSize / 2;
+      labelY = point.y + this.config.fontNormalSize / 2;
     } else if (point.y < view.y) {
       ctx.textBaseline = 'alphabetic';
-      valueY = point.y - this.config.fontSize;
+      valueY = point.y - this.config.fontNormalSize;
       labelY = point.y;
     } else {
       ctx.textBaseline = 'hanging';
       valueY = point.y;
-      labelY = point.y + this.config.fontSize;
+      labelY = point.y + this.config.fontNormalSize;
     }
     if (point.x < view.x) {
       ctx.textAlign = 'right';
@@ -287,10 +290,11 @@ class OutLabels {
     ctx.fillText(value, valueX, valueY);
 
     // Draw label
+    ctx.fillStyle = this.config.fontNormalColor;
     ctx.font = Chart.helpers.fontString(
-      this.config.fontSize,
+      this.config.fontNormalSize,
       this.config.fontNormalStyle,
-      this.config.fontFamily
+      this.config.fontNormalFamily
     );
     ctx.fillText(label, labelX, labelY);
 
@@ -309,19 +313,19 @@ class OutLabels {
     }
 
     ctx.font = Chart.helpers.fontString(
-      this.config.fontSize,
+      this.config.fontNormalSize,
       this.config.fontNormalStyle,
-      this.config.fontFamily
+      this.config.fontNormalFamily
     );
     const labelWidth = ctx.measureText(' ' + label).width;
     const startX = point.x;
     let valueX, labelX;
 
-    ctx.fillStyle = this.config.fontColor;
+    ctx.fillStyle = this.config.fontBoldColor;
     ctx.font = Chart.helpers.fontString(
-      this.config.fontSize,
+      this.config.fontBoldSize,
       this.config.fontBoldStyle,
-      this.config.fontFamily
+      this.config.fontBoldFamily
     );
     const valueWidth = ctx.measureText(value + ' ').width;
 
@@ -347,10 +351,11 @@ class OutLabels {
     ctx.fillText(value, valueX, point.y);
 
     // Draw label
+    ctx.fillStyle = this.config.fontNormalColor;
     ctx.font = Chart.helpers.fontString(
-      this.config.fontSize,
+      this.config.fontNormalSize,
       this.config.fontNormalStyle,
-      this.config.fontFamily
+      this.config.fontNormalFamily
     );
     ctx.fillText(label, labelX, point.y);
 
