@@ -1,6 +1,6 @@
 import Chart from 'chart.js';
 
-class OutLabels {
+class OuterLabels {
   init(chartInstance) {
     this.chart = chartInstance;
     this.ctx = chartInstance.chart.ctx;
@@ -98,8 +98,8 @@ class OutLabels {
     }
 
     // Flag that the middle points can be vertically centred
-    const leftMiddleIndex = (left.length - 1) / 2;
-    const rightMiddleIndex = (right.length - 1) / 2;
+    const leftMiddleIndex = Math.round((left.length - 1) / 2);
+    const rightMiddleIndex = Math.round((right.length - 1) / 2);
     if (left[leftMiddleIndex]) {
       left[leftMiddleIndex].middle = true;
     }
@@ -253,7 +253,7 @@ class OutLabels {
     } else {
       ctx.textBaseline = 'hanging';
       valueY = point.y;
-      labelY = point.y + this.config.fontNormalSize;
+      labelY = point.y + this.config.fontBoldSize;
     }
     if (point.x < view.x) {
       ctx.textAlign = 'right';
@@ -382,7 +382,7 @@ class OutLabels {
 Chart.pluginService.register({
   id: 'outerLabels',
   beforeInit: (chartInstance, options) => {
-    chartInstance.outerLabels = new OutLabels();
+    chartInstance.outerLabels = new OuterLabels();
     chartInstance.outerLabels.init(chartInstance);
     chartInstance.outerLabels.configure(options);
   },
