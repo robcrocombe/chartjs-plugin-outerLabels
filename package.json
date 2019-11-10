@@ -1,9 +1,11 @@
 {
-  "name": "chartjs-plugin-outerLabels",
+  "name": "chartjs-plugin-outerlabels",
   "version": "1.0.0",
   "description": "Chart.js outerLabels plugin",
   "main": "outerLabels.js",
-  "files": ["outerLabels.js"],
+  "files": [
+    "outerLabels.js"
+  ],
   "scripts": {
     "start": "parcel ./demo/demo.html",
     "test": "echo \"Error: no test specified\" && exit 1"
