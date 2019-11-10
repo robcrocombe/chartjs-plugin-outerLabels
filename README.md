@@ -9,5 +9,5 @@ Run `npm start` to see a demo.
 ## Install
 
 ```
-npm install chartjs-plugin-outerLabels
+npm install chartjs-plugin-outerlabels
 ```
