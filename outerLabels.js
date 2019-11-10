@@ -41,7 +41,7 @@ class OuterLabels {
       return;
     }
 
-    if (this.points.length < this.chart.config.data.labels) {
+    if (this.points.length < this.chart.config.data.labels.length) {
       if (this.config.debug) {
         console.error('Too many labels to fit into the available anchor points.');
       }
@@ -112,23 +112,23 @@ class OuterLabels {
 
   // Source: https://stackoverflow.com/a/37225895
   intersectCircleLine(circle, line) {
-    let a, b, c, d, u1, u2, ret, retP1, retP2, v1, v2;
+    let a, b, c, u1, u2, ret, retP1, retP2, v1, v2;
     v1 = {};
     v2 = {};
     v1.x = line.p2.x - line.p1.x;
     v1.y = line.p2.y - line.p1.y;
     v2.x = line.p1.x - circle.center.x;
     v2.y = line.p1.y - circle.center.y;
-    b = v1.x * v2.x + v1.y * v2.y;
-    c = 2 * (v1.x * v1.x + v1.y * v1.y);
-    b *= -2;
-    d = Math.sqrt(b * b - 2 * c * (v2.x * v2.x + v2.y * v2.y - circle.radius * circle.radius));
-    if (isNaN(d)) {
+    a = v1.x * v2.x + v1.y * v2.y;
+    b = 2 * (v1.x * v1.x + v1.y * v1.y);
+    a *= -2;
+    c = Math.sqrt(a * a - 2 * b * (v2.x * v2.x + v2.y * v2.y - circle.radius * circle.radius));
+    if (isNaN(c)) {
       // No intercept
       return [];
     }
-    u1 = (b - d) / c; // These represent the unit distance of point one and two on the line
-    u2 = (b + d) / c;
+    u1 = (a - c) / b; // These represent the unit distance of point one and two on the line
+    u2 = (a + c) / b;
     retP1 = {}; // Return points
     retP2 = {};
     ret = []; // Return array
@@ -371,7 +371,7 @@ class OuterLabels {
   }
 
   radians(degrees) {
-    return degrees * Math.PI / 180;
+    return (degrees * Math.PI) / 180;
   }
 
   degrees(radians) {

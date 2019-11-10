@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Chart.js outerLabels plugin",
   "main": "outerLabels.js",
+  "files": ["outerLabels.js"],
   "scripts": {
     "start": "parcel ./demo/demo.html",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,13 +17,21 @@
     "parser": "babel"
   },
   "devDependencies": {
+    "babel-core": "6.26.3",
     "babel-plugin-transform-object-rest-spread": "6.26.0",
-    "parcel-bundler": "1.9.7"
+    "babel-preset-env": "1.7.0",
+    "parcel-bundler": "1.12.4"
   },
   "dependencies": {
     "chart.js": "2.7.2"
   },
   "peerDependencies": {
     "chart.js": ">= 2.7.0 < 3"
-  }
+  },
+  "keywords": [
+    "chart",
+    "chart.js",
+    "plugin",
+    "label"
+  ]
 }
