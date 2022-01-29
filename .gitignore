@@ -46,4 +46,6 @@ node_modules/
 
 # Etc.
 .cache/
+.parcel-cache/
+dist-demo/
 dist/

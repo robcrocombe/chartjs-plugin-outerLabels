@@ -31,7 +31,6 @@ const config = {
         fontNormalColor: '#565d64',
         fontBoldSize: 14,
         fontBoldColor: '#2e2e2e',
-        offset: 4,
         // debug: true,
       },
       tooltip: {
@@ -51,8 +50,7 @@ const config = {
   data: {
     datasets: [
       {
-        data: [85, 2, 8, 20],
-        // data: [2, 2, 2, 85],
+        data: [2, 2, 2, 85],
         backgroundColor: [
           window.chartColors.red,
           window.chartColors.yellow,
