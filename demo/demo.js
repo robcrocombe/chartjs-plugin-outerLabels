@@ -1,4 +1,4 @@
-import 'chart.js';
+import { ArcElement, Chart, DoughnutController } from 'chart.js';
 import './../outerLabels';
 
 // Reload page on code change
@@ -8,8 +8,10 @@ if (module.hot) {
   });
 }
 
-Chart.defaults.global.defaultFontFamily = '-apple-system, BlinkMacSystemFont, sans-serif';
-Chart.defaults.global.defaultFontSize = 12;
+Chart.register(ArcElement, DoughnutController);
+
+Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, sans-serif';
+Chart.defaults.font.size = 12;
 
 window.chartColors = {
   red: 'rgb(255, 99, 132)',
@@ -29,17 +31,19 @@ const config = {
         fontNormalColor: '#565d64',
         fontBoldSize: 14,
         fontBoldColor: '#2e2e2e',
-        debug: true,
+        offset: 4,
+        // debug: true,
+      },
+      tooltip: {
+        enabled: false,
       },
     },
-    tooltips: {
-      enabled: false,
-    },
     responsive: true,
+    maintainAspectRatio: false,
     animation: false,
     legend: false,
     layout: {
-      padding: 30,
+      padding: 50,
     },
     events: [],
   },

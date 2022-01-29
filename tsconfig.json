@@ -1,0 +1,19 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "lib": ["es2018", "dom"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
