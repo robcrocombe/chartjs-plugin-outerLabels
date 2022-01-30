@@ -9,6 +9,7 @@
   ],
   "scripts": {
     "start": "parcel ./demo/demo.html --dist-dir ./dist-demo",
+    "dist": "rm -rf dist && tsc --project ./tsconfig.dist.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Rob Crocombe <git@robcrocombe.com> (http://robcrocombe.com)",
@@ -25,6 +26,7 @@
   },
   "browserslist": "last 2 versions, safari >= 7",
   "devDependencies": {
+    "@types/parcel-env": "0.0.1",
     "parcel": "2.2.1",
     "typescript": "4.5.5"
   },

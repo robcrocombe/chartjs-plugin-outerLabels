@@ -1,7 +1,7 @@
 import { ArcProps, Chart, ChartDataset, ChartMeta } from 'chart.js';
 import { fontString } from 'chart.js/helpers';
 
-interface ChartItem {
+export interface ChartItem {
   value?: number;
   label?: string;
 }

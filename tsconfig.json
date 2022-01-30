@@ -1,19 +1,22 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2015",
     "module": "commonjs",
-    "lib": ["es2018", "dom"],
+    "lib": ["dom"],
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "declaration": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
     "noUnusedParameters": true,
-    "noUnusedLocals": true
+    "noUnusedLocals": true,
+    "skipLibCheck": true
   },
   "exclude": [
-    "node_modules",
-    "dist"
+    ".parcel-cache",
+    "dist",
+    "dist-demo",
+    "node_modules"
   ]
 }
