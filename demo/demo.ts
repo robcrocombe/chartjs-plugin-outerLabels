@@ -1,4 +1,4 @@
-import 'chart.js';
+import { ArcElement, Chart, DoughnutController } from 'chart.js';
 import './../outerLabels';
 
 // Reload page on code change
@@ -8,10 +8,12 @@ if (module.hot) {
   });
 }
 
-Chart.defaults.global.defaultFontFamily = '-apple-system, BlinkMacSystemFont, sans-serif';
-Chart.defaults.global.defaultFontSize = 12;
+Chart.register(ArcElement, DoughnutController);
 
-window.chartColors = {
+Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, sans-serif';
+Chart.defaults.font.size = 12;
+
+const chartColors = {
   red: 'rgb(255, 99, 132)',
   orange: 'rgb(255, 159, 64)',
   yellow: 'rgb(255, 205, 86)',
@@ -29,17 +31,18 @@ const config = {
         fontNormalColor: '#565d64',
         fontBoldSize: 14,
         fontBoldColor: '#2e2e2e',
-        debug: true,
+        // debug: true,
+      },
+      tooltip: {
+        enabled: false,
       },
     },
-    tooltips: {
-      enabled: false,
-    },
     responsive: true,
+    maintainAspectRatio: false,
     animation: false,
     legend: false,
     layout: {
-      padding: 30,
+      padding: 50,
     },
     events: [],
   },
@@ -47,13 +50,12 @@ const config = {
   data: {
     datasets: [
       {
-        data: [85, 2, 8, 20],
-        // data: [2, 2, 2, 85],
+        data: [2, 2, 2, 85],
         backgroundColor: [
-          window.chartColors.red,
-          window.chartColors.yellow,
-          window.chartColors.blue,
-          window.chartColors.green,
+          chartColors.red,
+          chartColors.yellow,
+          chartColors.blue,
+          chartColors.green,
         ],
         label: 'Dataset 1',
       },
@@ -62,7 +64,7 @@ const config = {
   },
 };
 
-function newConfig(data, twoLines) {
+function newConfig(data: number[], twoLines?: boolean) {
   const c = JSON.parse(JSON.stringify(config));
   c.data.datasets[0].data = data;
 
@@ -74,16 +76,20 @@ function newConfig(data, twoLines) {
   return c;
 }
 
+function getCanvas(id: string): CanvasRenderingContext2D {
+  return (document.getElementById(id) as HTMLCanvasElement).getContext('2d');
+}
+
 window.onload = function() {
-  const ctx1 = document.getElementById('chart-area1').getContext('2d');
+  const ctx1 = getCanvas('chart-area1');
   new Chart(ctx1, newConfig([85, 2, 8, 20]));
 
-  const ctx2 = document.getElementById('chart-area2').getContext('2d');
+  const ctx2 = getCanvas('chart-area2');
   new Chart(ctx2, newConfig([16, 2, 2, 42]));
 
-  const ctx3 = document.getElementById('chart-area3').getContext('2d');
+  const ctx3 = getCanvas('chart-area3');
   new Chart(ctx3, newConfig([500, 100, 12000], true));
 
-  const ctx4 = document.getElementById('chart-area4').getContext('2d');
+  const ctx4 = getCanvas('chart-area4');
   new Chart(ctx4, newConfig([50, 50]));
 };

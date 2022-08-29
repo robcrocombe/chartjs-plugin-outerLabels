@@ -1,23 +1,74 @@
-import Chart from 'chart.js';
+import { ArcProps, Chart, ChartDataset, ChartMeta } from 'chart.js';
+import { fontString } from 'chart.js/helpers';
 
-class OuterLabels {
-  init(chartInstance) {
-    this.chart = chartInstance;
-    this.ctx = chartInstance.chart.ctx;
+export interface ChartItem {
+  value?: number;
+  label?: string;
+}
+
+export interface OuterLabelsConfig {
+  offset?: number;
+  padding?: number;
+  fontNormalColor?: string;
+  fontNormalSize?: number;
+  fontNormalFamily?: string;
+  fontBoldColor?: string;
+  fontBoldSize?: number;
+  fontBoldFamily?: string;
+  fontNormalStyle?: string;
+  fontBoldStyle?: string;
+  twoLines?: boolean;
+  debug?: boolean;
+  formatter?: (item: ChartItem) => string;
+}
+
+interface Point {
+  x: number;
+  y: number;
+  angle: number;
+  segmentAngle?: number;
+  index?: number;
+  taken?: boolean;
+  label?: string;
+  middle?: boolean;
+}
+
+// Extend chart.js types with outerLabels plugin
+declare module 'chart.js' {
+  interface Chart {
+    outerLabels: OuterLabels;
   }
 
-  configure(override) {
+  interface PluginOptionsByType<TType extends ChartType> {
+    outerLabels?: OuterLabelsConfig | false;
+  }
+}
+
+class OuterLabels {
+  private chart: Chart<'doughnut'>;
+  private config: OuterLabelsConfig;
+  private ctx: CanvasRenderingContext2D;
+  private meta: ChartMeta;
+  private points: Point[];
+  private model: Point[];
+
+  public init(chartInstance: Chart) {
+    this.chart = chartInstance as Chart<'doughnut'>;
+    this.ctx = chartInstance.ctx;
+  }
+
+  public configure(override: OuterLabelsConfig) {
     this.config = {
       offset: 3,
       padding: 2,
-      fontNormalColor: Chart.defaults.global.defaultFontColor,
-      fontNormalSize: Chart.defaults.global.defaultFontSize,
-      fontNormalFamily: Chart.defaults.global.defaultFontFamily,
-      fontBoldColor: Chart.defaults.global.defaultFontColor,
-      fontBoldSize: Chart.defaults.global.defaultFontSize + 2,
-      fontBoldFamily: Chart.defaults.global.defaultFontFamily,
-      fontNormalStyle: 400,
-      fontBoldStyle: 600,
+      fontNormalColor: Chart.defaults.color as string,
+      fontNormalSize: Chart.defaults.font.size,
+      fontNormalFamily: Chart.defaults.font.family,
+      fontBoldColor: Chart.defaults.color as string,
+      fontBoldSize: Chart.defaults.font.size + 2,
+      fontBoldFamily: Chart.defaults.font.family,
+      fontNormalStyle: '400',
+      fontBoldStyle: '600',
       twoLines: false,
       debug: false,
       formatter: n => `${n.value} ${n.label}`,
@@ -25,14 +76,13 @@ class OuterLabels {
     };
   }
 
-  resolveDataset(dataset) {
-    const meta = dataset._meta[Object.keys(dataset._meta)[0]];
-    const element = meta.data[0];
-    const view = element._view;
-    this.meta = meta;
+  public resolveDataset() {
+    const dataset = this.chart.config.data.datasets[0];
+    const view = this.chart.getDatasetMeta(0);
+    this.meta = view;
     this.points = [];
 
-    this.generatePoints(view);
+    this.generatePoints(view.data[0] as any);
 
     if (!this.points.length) {
       if (this.config.debug) {
@@ -48,10 +98,10 @@ class OuterLabels {
       return;
     }
 
-    this.model = this.resolve(dataset, meta);
+    this.model = this.resolve(dataset, view);
   }
 
-  generatePoints(view) {
+  public generatePoints(view: ArcProps) {
     const startY = view.y - (view.outerRadius + this.config.offset);
     const endY = view.y + (view.outerRadius + this.config.offset);
     let n = startY + 1;
@@ -111,7 +161,7 @@ class OuterLabels {
   }
 
   // Source: https://stackoverflow.com/a/37225895
-  intersectCircleLine(circle, line) {
+  public intersectCircleLine(circle, line) {
     let a, b, c, u1, u2, ret, retP1, retP2, v1, v2;
     v1 = {};
     v2 = {};
@@ -147,13 +197,12 @@ class OuterLabels {
     return ret;
   }
 
-  resolve(dataset, meta) {
+  public resolve(dataset: ChartDataset<'doughnut'>, meta: ChartMeta) {
     const labels = [];
 
     // Match each chart segment to a point
     for (let i = 0; i < meta.data.length; ++i) {
-      const element = meta.data[i];
-      const view = element._view;
+      const view: ArcProps = meta.data[i] as any;
 
       const a = (view.endAngle - view.startAngle) / 2;
       const segmentAngle = view.startAngle + a;
@@ -176,7 +225,7 @@ class OuterLabels {
     labels.sort((a, b) => a.angle - b.angle);
     for (let i = 0; i < labels.length; ++i) {
       labels[i].label = this.config.formatter({
-        label: this.chart.config.data.labels[i],
+        label: this.chart.config.data.labels[i] as string,
         value: dataset.data[i],
       });
     }
@@ -184,7 +233,7 @@ class OuterLabels {
     return labels;
   }
 
-  getAngle(origin, point) {
+  public getAngle(origin, point) {
     let angle = Math.atan2(point.y - origin.y, point.x - origin.x);
 
     if (angle < this.radians(-90)) {
@@ -194,12 +243,12 @@ class OuterLabels {
     return angle;
   }
 
-  drawLabels() {
+  public drawLabels() {
     for (let i = 0; i < this.model.length; ++i) {
       if (this.config.twoLines) {
-        this.drawDoubleLine(this.meta.data[i], this.model[i]);
+        this.drawDoubleLine(this.meta.data[i] as any, this.model[i]);
       } else {
-        this.drawSingleLine(this.meta.data[i], this.model[i]);
+        this.drawSingleLine(this.meta.data[i] as any, this.model[i]);
       }
     }
 
@@ -213,18 +262,17 @@ class OuterLabels {
     }
   }
 
-  drawDoubleLine(element, point) {
+  public drawDoubleLine(view: ArcProps, point: Point) {
     const ctx = this.ctx;
-    const view = element._view;
-    const parts = point.label.split(' ');
-    const value = parts[0];
-    const label = parts[1];
+    const index = point.label.indexOf(' ');
+    const value = point.label.substring(0, index);
+    const label = point.label.substring(index + 1);
 
     if (view.circumference === 0) {
       return;
     }
 
-    ctx.font = Chart.helpers.fontString(
+    ctx.font = fontString(
       this.config.fontNormalSize,
       this.config.fontNormalStyle,
       this.config.fontNormalFamily
@@ -234,7 +282,7 @@ class OuterLabels {
     let valueX, valueY, labelX, labelY;
 
     ctx.fillStyle = this.config.fontBoldColor;
-    ctx.font = Chart.helpers.fontString(
+    ctx.font = fontString(
       this.config.fontBoldSize,
       this.config.fontBoldStyle,
       this.config.fontBoldFamily
@@ -291,7 +339,7 @@ class OuterLabels {
 
     // Draw label
     ctx.fillStyle = this.config.fontNormalColor;
-    ctx.font = Chart.helpers.fontString(
+    ctx.font = fontString(
       this.config.fontNormalSize,
       this.config.fontNormalStyle,
       this.config.fontNormalFamily
@@ -301,18 +349,17 @@ class OuterLabels {
     ctx.restore();
   }
 
-  drawSingleLine(element, point) {
+  public drawSingleLine(view: ArcProps, point: Point) {
     const ctx = this.ctx;
-    const view = element._view;
-    const parts = point.label.split(' ');
-    const value = parts[0];
-    const label = parts[1];
+    const index = point.label.indexOf(' ');
+    const value = point.label.substring(0, index);
+    const label = point.label.substring(index + 1);
 
     if (view.circumference === 0) {
       return;
     }
 
-    ctx.font = Chart.helpers.fontString(
+    ctx.font = fontString(
       this.config.fontNormalSize,
       this.config.fontNormalStyle,
       this.config.fontNormalFamily
@@ -322,7 +369,7 @@ class OuterLabels {
     let valueX, labelX;
 
     ctx.fillStyle = this.config.fontBoldColor;
-    ctx.font = Chart.helpers.fontString(
+    ctx.font = fontString(
       this.config.fontBoldSize,
       this.config.fontBoldStyle,
       this.config.fontBoldFamily
@@ -352,7 +399,7 @@ class OuterLabels {
 
     // Draw label
     ctx.fillStyle = this.config.fontNormalColor;
-    ctx.font = Chart.helpers.fontString(
+    ctx.font = fontString(
       this.config.fontNormalSize,
       this.config.fontNormalStyle,
       this.config.fontNormalFamily
@@ -362,7 +409,7 @@ class OuterLabels {
     ctx.restore();
   }
 
-  closest(arr, goal) {
+  public closest(arr, goal) {
     const filtered = arr.filter(n => !n.taken);
 
     return filtered.reduce((prev, curr) => {
@@ -370,25 +417,34 @@ class OuterLabels {
     });
   }
 
-  radians(degrees) {
+  public radians(degrees) {
     return (degrees * Math.PI) / 180;
   }
 
-  degrees(radians) {
-    return radians * 180 / Math.PI;
+  public degrees(radians) {
+    return (radians * 180) / Math.PI;
   }
 }
 
-Chart.pluginService.register({
+Chart.register({
   id: 'outerLabels',
-  beforeInit: (chartInstance, options) => {
-    chartInstance.outerLabels = new OuterLabels();
-    chartInstance.outerLabels.init(chartInstance);
-    chartInstance.outerLabels.configure(options);
+  beforeInit: chart => {
+    if (chart.options.plugins?.outerLabels) {
+      chart.outerLabels = new OuterLabels();
+      chart.outerLabels.init(chart);
+      chart.outerLabels.configure(chart.options.plugins?.outerLabels);
+    }
   },
-  afterDatasetsDraw: chartInstance => {
-    const dataset = chartInstance.config.data.datasets[0];
-    chartInstance.outerLabels.resolveDataset(dataset);
-    chartInstance.outerLabels.drawLabels(dataset);
+  afterDatasetsDraw: chart => {
+    if (chart.outerLabels && chart.config.data.datasets[0]) {
+      chart.outerLabels.resolveDataset();
+      chart.outerLabels.drawLabels();
+    }
   },
+  // Disable scriptable options, i.e. formatter should be a callback
+  // (not in the TS types for some reason)
+  descriptors: {
+    _indexable: false,
+    _scriptable: false,
+  } as any,
 });

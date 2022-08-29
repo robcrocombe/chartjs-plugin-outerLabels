@@ -1,0 +1,22 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "lib": ["es2018", "dom"],
+    "outDir": "dist",
+    "rootDir": ".",
+    "declaration": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "noUnusedParameters": true,
+    "noUnusedLocals": true,
+    "skipLibCheck": true
+  },
+  "exclude": [
+    ".parcel-cache",
+    "dist",
+    "dist-demo",
+    "node_modules"
+  ]
+}
